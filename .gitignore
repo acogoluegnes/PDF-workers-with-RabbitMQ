@@ -1,0 +1,8 @@
+.project
+.classpath
+.springBeans
+**/target/*
+**/.settings/*
+.settings/*
+*.snm
+*.log
