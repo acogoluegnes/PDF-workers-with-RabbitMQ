@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:int-amqp="http://www.springframework.org/schema/integration/amqp"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/amqp http://www.springframework.org/schema/integration/amqp/spring-integration-amqp-2.1.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.1.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<rabbit:connection-factory id="connectionFactory" channel-cache-size="10" />
+	
+	<bean id="amqpTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+	</bean>
+	
+	<rabbit:admin connection-factory="connectionFactory" />
+	
+	<rabbit:queue durable="false" name="pdfRequests" />
+	
+	<bean id="remotePdfService" class="com.zenika.rabbitmq.ITextPdfService" />
+	
+	<rabbit:listener-container connection-factory="connectionFactory">
+		<rabbit:listener ref="remotePdfService" method="createPdf" queues="pdfRequests" />
+	</rabbit:listener-container>
+	
+	<int:gateway id="pdfService" 
+		default-request-channel="pdfRequestsChannel" service-interface="com.zenika.rabbitmq.PdfService" />
+	
+	<int:channel id="pdfRequestsChannel" />
+	
+	<int-amqp:outbound-gateway
+		request-channel="pdfRequestsChannel" 
+		amqp-template="amqpTemplate"
+		routing-key="pdfRequests"		
+	/>
+
+</beans>

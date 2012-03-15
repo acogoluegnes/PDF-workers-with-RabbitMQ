@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit-1.0.xsd">
+
+	<rabbit:connection-factory id="connectionFactory" channel-cache-size="10" />
+	
+	<bean class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+		<property name="connectionFactory" ref="connectionFactory" />
+	</bean>
+	
+	<rabbit:admin connection-factory="connectionFactory" />
+	
+	<rabbit:queue durable="false" name="pdfRequests" />
+	
+	<bean id="pdfService" class="com.zenika.rabbitmq.ITextPdfService" />
+	
+	<rabbit:listener-container connection-factory="connectionFactory">
+		<rabbit:listener ref="pdfService" method="createPdf" queues="pdfRequests" />
+	</rabbit:listener-container>
+
+</beans>
