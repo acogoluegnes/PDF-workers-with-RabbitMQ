@@ -6,7 +6,7 @@
 		</encoder>
 	</appender>
 	
-	<logger name="org.springframework.integration" level="DEBUG" />
+	<logger name="org.springframework.integration" level="WARN" />
 
 	<root level="error">
 		<appender-ref ref="STDOUT" />
